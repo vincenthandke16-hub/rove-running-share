@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ROVE Running – Route öffnen</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px;
+      text-align: center;
+    }
+    .card { max-width: 360px; }
+    .badge {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: #34d399;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    p { color: rgba(255, 255, 255, 0.65); font-size: 14px; line-height: 1.5; margin: 0 0 28px; }
+    a.button {
+      display: block;
+      text-decoration: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+    .primary { background: #34d399; color: #0a0a0a; }
+    .secondary { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">🏃</div>
+    <h1>Route wird geöffnet …</h1>
+    <p>Falls sich nichts tut, ist ROVE Running vermutlich noch nicht installiert.</p>
+    <a id="open-app" class="button primary" href="#">In ROVE Running öffnen</a>
+    <a id="open-store" class="button secondary" href="https://apps.apple.com/app/id6818821118">
+      App laden
+    </a>
+  </div>
+  <script>
+    // Standard "try the custom scheme, fall back to the store" pattern for
+    // a deep link that might not have an app installed to handle it: there
+    // is no OS-level signal for "nothing opened", so this instead watches
+    // whether the page gets backgrounded (the app opening does that) within
+    // a short window, and redirects to the store only if it doesn't.
+    var params = new URLSearchParams(window.location.search);
+    var data = params.get('d');
+    var appUrl = data ? 'roverunning://route?d=' + data : 'roverunning://';
+    // Unlike Apple's arbitrary numeric app ID, a Play Store listing's URL
+    // is just the app's package name — already known (app.json), so this
+    // doesn't need to wait on an Android release to be filled in.
+    var isAndroid = /Android/i.test(navigator.userAgent);
+    var storeUrl = isAndroid
+      ? 'https://play.google.com/store/apps/details?id=com.rove.running'
+      : 'https://apps.apple.com/app/id6818821118';
+
+    document.getElementById('open-app').href = appUrl;
+    document.getElementById('open-store').href = storeUrl;
+
+    var leftPage = false;
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) leftPage = true;
+    });
+    window.addEventListener('pagehide', function () {
+      leftPage = true;
+    });
+
+    if (data) {
+      window.location.href = appUrl;
+      setTimeout(function () {
+        if (!leftPage) window.location.href = storeUrl;
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
